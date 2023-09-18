@@ -7,8 +7,8 @@ class ResnetBlock(torch.nn.Module):
 
     def __init__(
         self,
-        layers: torch.nn.Sequential,
-        residual_transform: torch.nn.Sequential | None = None,
+        layers: torch.nn.Module,
+        residual_transform: torch.nn.Module | None = None,
         activation: type[torch.nn.Module] = torch.nn.GELU,
         stochastic_depth_rate: float = 0.0,
     ):
