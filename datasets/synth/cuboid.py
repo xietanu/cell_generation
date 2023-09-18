@@ -64,7 +64,7 @@ class Cuboid(torch.utils.data.Dataset):
                 self.side_range[0], self.side_range[1] + 1, size=3, dtype=int
             )
         )
-        
+
         cuboid = voxel.create.cuboid(side_lengths, self.space_size)  # type: ignore
 
         mask = cuboid.create_mask(*np.random.uniform(0, 2 * np.pi, size=3))

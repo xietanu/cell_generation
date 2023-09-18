@@ -21,7 +21,8 @@ class Mask(protocols.MetaImage):
             data[:, :] = -1
         else:
             data = (
-                2 * (data.astype(np.float32) - data.min()) / (data.max() - data.min()) - 1
+                2 * (data.astype(np.float32) - data.min()) / (data.max() - data.min())
+                - 1
             )
         self.array = data.astype(np.float32)
         self.title = title
