@@ -1,3 +1,4 @@
+"""Module for convolutional neural network block implementation."""
 from nnet.blocks.conv.lin_to_conv import LinearToConv
 from nnet.blocks.conv.conv_to_lin import ConvToLinear
 from nnet.blocks.conv.basic_conv import (

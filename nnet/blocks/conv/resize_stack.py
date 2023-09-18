@@ -1,5 +1,5 @@
+"""Torch module for creating a stack of downsampling/upsampling blocks."""
 import torch
-import numpy as np
 
 import protocols
 
@@ -45,15 +45,12 @@ class ResizeStack(torch.nn.Module):
         self.main = torch.nn.ModuleList()
 
         cur_channels = in_shape[0]
-        cur_w = in_shape[1]
 
         for factor, n_layers in self.layer_schedule:
             if downsample:
                 next_channels = cur_channels * factor
-                next_w = cur_w // factor
             else:
                 next_channels = cur_channels // factor
-                next_w = cur_w * factor
             if n_layers > 1:
                 for _ in range(n_layers - 1):
                     self.main.append(
@@ -74,8 +71,9 @@ class ResizeStack(torch.nn.Module):
 
         self.main = torch.nn.Sequential(*self.main)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.main(x)
+    def forward(self, in_tensor: torch.Tensor) -> torch.Tensor:
+        """Forward pass."""
+        return self.main(in_tensor)
 
 
 def create_layer_schedule(
@@ -84,6 +82,7 @@ def create_layer_schedule(
     total_layers: int | None = None,
     big_to_small: bool = False,
 ) -> list[tuple[int, int]]:
+    """Create a schedule for the number of processing layers per downsample."""
     factors = prime_factors(shrink_scale)
 
     if big_to_small:
@@ -101,21 +100,24 @@ def create_layer_schedule(
     if total_layers is not None:
         schedule = [[factor, total_layers // len(factors)] for factor in factors]
         schedule[len(schedule) // 2][1] += total_layers % len(factors)
-        schedule = [(factor, layers) for factor, layers in schedule]
+        schedule = [
+            (factor, layers) for factor, layers in schedule
+        ]  # pylint: disable=unnecessary-comprehension
         return schedule
 
     raise ValueError("Unreachable")
 
 
-def prime_factors(n):
+def prime_factors(value):
+    """Return the prime factors of the given value."""
     i = 2
     factors = []
-    while i * i <= n:
-        if n % i:
+    while i * i <= value:
+        if value % i:
             i += 1
         else:
-            n //= i
+            value //= i
             factors.append(i)
-    if n > 1:
-        factors.append(n)
+    if value > 1:
+        factors.append(value)
     return factors

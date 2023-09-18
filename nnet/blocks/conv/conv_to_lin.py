@@ -1,9 +1,12 @@
+"""Torch module for converting a convolutional layer to a linear layer."""
 import torch
 
 import numpy as np
 
 
 class ConvToLinear(torch.nn.Module):
+    """Converts a convolutional layer to a linear layer."""
+
     def __init__(
         self,
         in_shape: tuple[int, ...],
@@ -19,5 +22,6 @@ class ConvToLinear(torch.nn.Module):
             activation(),
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.main(x)
+    def forward(self, in_tensor: torch.Tensor) -> torch.Tensor:
+        """Forward pass."""
+        return self.main(in_tensor)

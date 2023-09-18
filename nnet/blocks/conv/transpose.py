@@ -1,7 +1,10 @@
+"""Torch module for a transpose convolutional block."""
 import torch
 
 
 class TransposeConvBlock(torch.nn.Module):
+    """Torch module for a transpose convolutional block."""
+
     def __init__(
         self,
         in_channels: int,
@@ -53,8 +56,9 @@ class TransposeConvBlock(torch.nn.Module):
 
         self.conv = torch.nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.conv(x)
+    def forward(self, in_tensor: torch.Tensor) -> torch.Tensor:
+        """Forward pass."""
+        return self.conv(in_tensor)
 
 
 def create_transpose_conv_factory(
@@ -67,10 +71,7 @@ def create_transpose_conv_factory(
     def create_block(
         in_dim: int, out_dim: int, *, factor: int = 2, **kwargs
     ) -> torch.nn.Module:
-        if "kernel_size" in kwargs:
-            kernel_size = kwargs["kernel_size"]
-        else:
-            kernel_size = None
+        kernel_size = kwargs.get("kernel_size", factor + 2)
 
         stride = factor
 

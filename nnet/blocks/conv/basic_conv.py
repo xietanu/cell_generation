@@ -1,7 +1,10 @@
+"""Class and function for basic convolutional blocks."""
 import torch
 
 
 class BasicConvBlock(torch.nn.Module):
+    """Basic convolutional block with activation, dropout and batch norm."""
+
     def __init__(
         self,
         in_channels: int,
@@ -50,8 +53,9 @@ class BasicConvBlock(torch.nn.Module):
 
         self.conv = torch.nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.conv(x)
+    def forward(self, in_tensor: torch.Tensor) -> torch.Tensor:
+        """Forward pass."""
+        return self.conv(in_tensor)
 
 
 def create_basic_conv_factory(
@@ -63,7 +67,10 @@ def create_basic_conv_factory(
     use_batch_norm: bool = True,
     dropout: float = 0.0,
 ):
+    """Create a basic convolutional block factory."""
+
     def create_block(in_dim: int, out_dim: int, **kwargs) -> torch.nn.Module:
+        """Create a basic convolutional block."""
         custom_kernel_size = kwargs.get("kernel_size", kernel_size)
         custom_stride = kwargs.get("stride", stride)
 
@@ -88,13 +95,13 @@ def create_strided_downsample_factory(
     use_batch_norm: bool = True,
     dropout: float = 0.0,
 ):
+    """Create a strided convolution block factory for downsampling."""
+
     def create_block(
         in_dim: int, out_dim: int, *, factor: int = 2, **kwargs
     ) -> torch.nn.Module:
-        if "kernel_size" in kwargs:
-            kernel_size = kwargs["kernel_size"]
-        else:
-            kernel_size = factor + 2
+        """Create a strided convolution block for downsampling."""
+        kernel_size = kwargs.get("kernerl_size", factor + 2)
 
         stride = factor
 

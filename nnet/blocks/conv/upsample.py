@@ -1,7 +1,10 @@
+"""Torch module for an upsampling block."""
 import torch
 
 
 class UpsampleBlock(torch.nn.Module):
+    """Torch module for an upsampling block."""
+
     def __init__(
         self,
         in_channels: int,
@@ -52,8 +55,9 @@ class UpsampleBlock(torch.nn.Module):
 
         self.conv = torch.nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.conv(x)
+    def forward(self, in_tensor: torch.Tensor) -> torch.Tensor:
+        """Forward pass."""
+        return self.conv(in_tensor)
 
 
 def create_upsample_block_factory(
@@ -64,9 +68,12 @@ def create_upsample_block_factory(
     use_batch_norm: bool = True,
     dropout: float = 0.0,
 ):
+    """Create a factory for upsampling blocks."""
+
     def create_block(
         in_dim: int, out_dim: int, *, factor: int = 2, **kwargs
     ) -> torch.nn.Module:
+        """Create an upsampling block."""
         custom_kernel_size = kwargs.get("kernel_size", kernel_size)
 
         return UpsampleBlock(
