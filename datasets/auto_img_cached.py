@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 
 
-class AutoImg(torch.utils.data.Dataset):
+class AutoImgCached(torch.utils.data.Dataset):
     """Dataset for segmentation."""
 
     def __init__(
@@ -40,29 +40,31 @@ class AutoImg(torch.utils.data.Dataset):
             ]
         )
         self.images = os.listdir(image_folder)[img_range[0] : img_range[1]]
+        self.cached_pairs = [self._load_pair(img_name) for img_name in self.images]
 
     def __getitem__(self, index):
         if self.train:
             transform = self.train_transform
         else:
             transform = self.transform
-        silh = transform(
-            cv2.imread(
-                os.path.join(self.img_folder, self.images[index]), cv2.IMREAD_GRAYSCALE
-            )
-        )
-        voxel = np.load(
-            os.path.join(self.voxel_folder, self.images[index].split(".")[0] + ".npy")
-        )
-        voxel = voxel / np.max(voxel)
+
+        mask, voxel = self.cached_pairs[index]
 
         return (
-            silh,
+            transform(mask),
             (
-                silh,
+                transform(mask),
                 voxel,
             ),
         )
 
+    def _load_pair(self, img_name: str):
+        mask = cv2.imread(os.path.join(self.img_folder, img_name), cv2.IMREAD_GRAYSCALE)
+
+        voxel = np.load(
+            os.path.join(self.voxel_folder, img_name.split(".")[0] + ".npy")
+        )
+        return mask, voxel
+
     def __len__(self):
-        return len(self.images)
+        return len(self.cached_pairs)

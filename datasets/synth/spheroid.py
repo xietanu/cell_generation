@@ -28,7 +28,9 @@ class Spheroid(torch.utils.data.Dataset):
         self.transform = torchvision.transforms.Compose(
             [
                 torchvision.transforms.ToTensor(),
-                torchvision.transforms.Lambda(lambda x: 2 * (x-x.min()) / (x.max()-x.min()) - 1),
+                torchvision.transforms.Lambda(
+                    lambda x: 2 * (x - x.min()) / (x.max() - x.min()) - 1
+                ),
             ]
         )
         self.generated_images = [

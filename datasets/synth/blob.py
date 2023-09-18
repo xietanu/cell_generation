@@ -42,10 +42,7 @@ class Blob(torch.utils.data.Dataset):
                 ),
             ]
         )
-        self.generated_images = [
-            self._create_blob_set()
-            for _ in range(num_images)
-        ]
+        self.generated_images = [self._create_blob_set() for _ in range(num_images)]
 
     def __getitem__(self, index):
         if self.train:
@@ -56,16 +53,14 @@ class Blob(torch.utils.data.Dataset):
             transform(self.generated_images[index][0]),
             (
                 transform(self.generated_images[index][0]),
-                self.generated_images[index][1]
-            )
+                self.generated_images[index][1],
+            ),
         )
 
     def _create_blob_set(self):
         n_blob = np.random.randint(*self.n_blob_range)
-        
-        cube = voxel.create.blob(
-            self.space_size, n_blob, self.blob_size_range
-        )
+
+        cube = voxel.create.blob(self.space_size, n_blob, self.blob_size_range)
 
         angles = np.random.uniform(0, 2 * np.pi, size=3)
 

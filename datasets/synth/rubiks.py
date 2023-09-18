@@ -3,21 +3,20 @@ import torch.utils.data
 import torchvision.transforms
 
 import voxel
-import render
 
 
-class Cuboid(torch.utils.data.Dataset):
+class Rubiks(torch.utils.data.Dataset):
     """Dataset for segmentation."""
 
     def __init__(
         self,
-        side_range: tuple[int, int],
+        side_length: int,
         space_size: tuple[int, int, int],
         num_images: int,
         *,
         train: bool = False,
     ):
-        self.side_range = side_range
+        self.side_length = side_length
         self.img_size = space_size[:2]
         self.num_images = num_images
         self.space_size = space_size
@@ -36,8 +35,6 @@ class Cuboid(torch.utils.data.Dataset):
                 torchvision.transforms.Lambda(
                     lambda x: 2 * (x - x.min()) / (x.max() - x.min()) - 1
                 ),
-                torchvision.transforms.RandomHorizontalFlip(),
-                torchvision.transforms.RandomVerticalFlip(),
                 torchvision.transforms.RandomRotation(180, fill=-1),
             ]
         )
@@ -59,21 +56,15 @@ class Cuboid(torch.utils.data.Dataset):
         )
 
     def _create_cuboid_set(self):
-        side_lengths = tuple(
-            np.random.randint(
-                self.side_range[0], self.side_range[1] + 1, size=3, dtype=int
-            )
-        )
-        
-        cuboid = voxel.create.cuboid(side_lengths, self.space_size)  # type: ignore
+        cube = voxel.create.rubiks(self.side_length, self.space_size)
 
-        mask = cuboid.create_mask(*np.random.uniform(0, 2 * np.pi, size=3))
+        image = cube.create_image(*np.random.uniform(0, 2 * np.pi, size=3))
 
         return (
-            mask.as_array(),
+            image.as_array(),
             (
-                mask.as_array(),
-                cuboid.as_array(),
+                image.as_array(),
+                cube.as_array(),
             ),
         )
 
