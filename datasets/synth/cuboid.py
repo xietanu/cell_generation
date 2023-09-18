@@ -1,13 +1,13 @@
+"""Dataset for cuboid generation."""
 import numpy as np
 import torch.utils.data
 import torchvision.transforms
 
 import voxel
-import render
 
 
 class Cuboid(torch.utils.data.Dataset):
-    """Dataset for segmentation."""
+    """Dataset for cuboid generation."""
 
     def __init__(
         self,
@@ -19,7 +19,6 @@ class Cuboid(torch.utils.data.Dataset):
     ):
         self.side_range = side_range
         self.img_size = space_size[:2]
-        self.num_images = num_images
         self.space_size = space_size
         self.train = train
         self.transform = torchvision.transforms.Compose(

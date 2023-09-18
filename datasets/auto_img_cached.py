@@ -1,3 +1,4 @@
+"""Dataset for general generation from images, where images are cached."""
 import os
 
 import torch.utils.data
@@ -8,7 +9,7 @@ import numpy as np
 
 
 class AutoImgCached(torch.utils.data.Dataset):
-    """Dataset for segmentation."""
+    """Dataset for general generation from images, where images are cached."""
 
     def __init__(
         self,

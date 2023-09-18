@@ -1,3 +1,4 @@
+"""Dataset for general generation from images.."""
 import os
 
 import torch.utils.data
@@ -8,7 +9,7 @@ import numpy as np
 
 
 class AutoImg(torch.utils.data.Dataset):
-    """Dataset for segmentation."""
+    """Dataset for general generation from images.."""
 
     def __init__(
         self,

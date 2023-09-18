@@ -1,3 +1,4 @@
+"""Dataset for testing colour voxel generation."""
 import numpy as np
 import torch.utils.data
 import torchvision.transforms
@@ -6,7 +7,7 @@ import voxel
 
 
 class Rubiks(torch.utils.data.Dataset):
-    """Dataset for segmentation."""
+    """Dataset for testing colour voxel generation."""
 
     def __init__(
         self,
@@ -18,7 +19,6 @@ class Rubiks(torch.utils.data.Dataset):
     ):
         self.side_length = side_length
         self.img_size = space_size[:2]
-        self.num_images = num_images
         self.space_size = space_size
         self.train = train
         self.transform = torchvision.transforms.Compose(
