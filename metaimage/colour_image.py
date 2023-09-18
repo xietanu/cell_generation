@@ -71,10 +71,10 @@ class ColourImage(protocols.MetaImage):
         **kwargs,
     ):
         """Plots the mask as a matplotlib subfigure."""
-        ax = fig.add_subplot(subplot_shape[1], subplot_shape[0], index + 1)
-        ax.imshow(self.array / 2 + 0.5, **kwargs)
+        axes = fig.add_subplot(subplot_shape[1], subplot_shape[0], index + 1)
+        axes.imshow(self.array / 2 + 0.5, **kwargs)
         if self.title is not None:
-            ax.set_title(self.title)
+            axes.set_title(self.title)
 
     def copy(self) -> ColourImage:
         """Returns a copy of the mask."""

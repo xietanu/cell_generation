@@ -69,10 +69,10 @@ class Mask(protocols.MetaImage):
         **kwargs,
     ):
         """Plots the mask as a matplotlib subfigure."""
-        ax = fig.add_subplot(subplot_shape[1], subplot_shape[0], index + 1)
-        ax.imshow(self.array, cmap="gray", vmin=-1, vmax=1, **kwargs)
+        axes = fig.add_subplot(subplot_shape[1], subplot_shape[0], index + 1)
+        axes.imshow(self.array, cmap="gray", vmin=-1, vmax=1, **kwargs)
         if self.title is not None:
-            ax.set_title(self.title)
+            axes.set_title(self.title)
 
     def copy(self) -> Mask:
         """Returns a copy of the mask."""
