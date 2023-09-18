@@ -3,11 +3,12 @@ import itertools
 import numpy as np
 
 
-def sphere(r: int) -> np.ndarray:
+def sphere(r: int, border: int | None = None) -> np.ndarray:
     """
     Create a sphere of size `size` with space around for rotation.
     """
-    border = r // 2
+    if border is None:
+        border = r // 2
 
     space_size = 2 * r + 2 * border
 
