@@ -1,3 +1,4 @@
+"""Plotting functions for displaying multiple images in a grid."""
 from typing import Iterable
 
 import numpy as np
@@ -9,13 +10,13 @@ import protocols
 import voxel
 import metaimage
 
-titled_item = tuple[str, protocols.Plotable | np.ndarray | torch.Tensor | None]
+TitledItem = tuple[str, protocols.Plotable | np.ndarray | torch.Tensor | None]
 
 
 def grid(
-    items: Iterable[protocols.Plotable | np.ndarray | titled_item | torch.Tensor | None]
+    items: Iterable[protocols.Plotable | np.ndarray | TitledItem | torch.Tensor | None]
     | Iterable[
-        Iterable[protocols.Plotable | np.ndarray | titled_item | torch.Tensor | None]
+        Iterable[protocols.Plotable | np.ndarray | TitledItem | torch.Tensor | None]
     ],
     figsize: tuple[float, float] = (12, 12),
 ) -> matplotlib.figure.Figure:
@@ -29,7 +30,7 @@ def grid(
         for item in items
     ]
 
-    row_length = max([len(row) for row in item_grid])
+    row_length = max(len(row) for row in item_grid)
     column_length = len(item_grid)
 
     figure = plt.figure(figsize=figsize)
@@ -46,20 +47,19 @@ def grid(
 
 
 def is_non_numpy_iterable(obj):
+    """Returns whether an object is an iterable that is not a numpy array."""
     return isinstance(obj, Iterable) and not isinstance(obj, np.ndarray)
 
 
 def convert_to_plotable(
     obj: np.ndarray | torch.Tensor | protocols.Plotable | None,
 ) -> protocols.Plotable | None:
-    if obj is None:
-        return None
+    """Converts an object to a plotable object."""
     if isinstance(obj, tuple):
         title, plotable = obj
         plotable = convert_to_plotable(plotable)
-        if plotable is None:
-            return None
-        plotable.title = title
+        if plotable is not None:
+            plotable.title = title
         return plotable
     if isinstance(obj, np.ndarray):
         if obj.ndim == 2:
