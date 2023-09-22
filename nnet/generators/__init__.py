@@ -1,6 +1,8 @@
 from nnet.generators.vae import VAE, vae_loss_function
 from nnet.generators.solid_mask_generator import SolidMaskGenerator
 from nnet.generators.trans_mask_generator import TransMaskGenerator
+from nnet.generators.trans_gray_mask_generator import TransGrayMaskGenerator
+from nnet.generators.trans_mask_generator_ii import TransMaskGeneratorII
 
 # from nnet.generators.mask_encoder import MaskEncoder
 # from nnet.generators.mask_discriminator import MaskDiscriminator
