@@ -14,17 +14,25 @@ class Mask(protocols.MetaImage):
 
     title: str | None
 
-    def __init__(self, data: np.ndarray, *, title: str | None = None):
-        if data.ndim != 2:
-            raise ValueError("Mask must be 2D")
-        if data.max() - data.min() == 0:
-            data[:, :] = -1
+    def __init__(self, data: np.ndarray | torch.Tensor, *, title: str | None = None):
+        if isinstance(data, torch.Tensor):
+            numpy_data = data.detach().cpu().squeeze().numpy()
         else:
-            data = (
-                2 * (data.astype(np.float32) - data.min()) / (data.max() - data.min())
+            numpy_data = data.copy()
+
+        if numpy_data.ndim != 2:
+            raise ValueError("Mask must be 2D")
+
+        if numpy_data.max() - numpy_data.min() == 0:
+            numpy_data[:, :] = -1
+        else:
+            numpy_data = (
+                2
+                * (numpy_data.astype(np.float32) - numpy_data.min())
+                / (numpy_data.max() - numpy_data.min())
                 - 1
             )
-        self.array = data.astype(np.float32)
+        self.array = numpy_data.astype(np.float32)
         self.title = title
 
     @property
@@ -39,16 +47,6 @@ class Mask(protocols.MetaImage):
     def as_tensor(self) -> torch.Tensor:
         """Returns the mask as a PyTorch tensor."""
         return torch.from_numpy(self.array[np.newaxis, :, :])
-
-    @classmethod
-    def from_array(cls, array, *, title: str | None = None) -> Mask:
-        """Creates a mask from a numpy array."""
-        return cls(array, title=title)
-
-    @classmethod
-    def from_tensor(cls, tensor, *, title: str | None = None) -> Mask:
-        """Creates a mask from a PyTorch tensor."""
-        return cls(tensor.detach().cpu().squeeze().numpy(), title=title)
 
     def plot(
         self, figsize: tuple[float, float] | None = None
