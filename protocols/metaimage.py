@@ -23,14 +23,6 @@ class MetaImage(Protocol):
     def as_tensor(self) -> torch.Tensor:  # type: ignore
         """Returns the image as a PyTorch tensor."""
 
-    @classmethod
-    def from_array(cls, array, *, title: str | None = None) -> MetaImage:  # type: ignore
-        """Creates a meta-image model from a numpy array."""
-
-    @classmethod
-    def from_tensor(cls, tensor, *, title: str | None = None) -> MetaImage:  # type: ignore
-        """Creates a meta-image model from a PyTorch tensor."""
-
     def plot(
         self, figsize: tuple[float, float] | None = None
     ) -> matplotlib.figure.Figure:  # type: ignore

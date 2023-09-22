@@ -30,7 +30,7 @@ class Voxel(Protocol):
     def from_tensor(cls, tensor, *, title: str | None = None) -> Voxel:  # type: ignore
         """Creates a Voxel model from a PyTorch tensor."""
 
-    def create_mask(self, x_angle: float, y_angle: float, z_angle: float) -> protocols.MetaImage:  # type: ignore
+    def create_image(self) -> protocols.MetaImage:  # type: ignore
         """Creates a mask from the voxel model from a given viewpoint."""
 
     def rotated(self, x_angle: float, y_angle: float, z_angle: float) -> Voxel:  # type: ignore
