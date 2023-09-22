@@ -2,12 +2,12 @@
 import numpy as np
 
 import cv2
-import voxel
+import voxgrid
 
 
 def spiral(
     thickness_r: float, width_r: float, space_size: tuple[int, int, int]
-) -> voxel.TranspVoxel:
+) -> voxgrid.TranspVoxel:
     """Create a cuboid with given side lengths inside of a larger space."""
     top = space_size[2] // 4
     bottom = top * 3 + 1
@@ -30,4 +30,4 @@ def spiral(
             -1,
         )
 
-    return voxel.TranspVoxel(voxels)
+    return voxgrid.TranspVoxel(voxels)

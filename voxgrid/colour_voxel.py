@@ -7,7 +7,7 @@ import numpy as np
 import torch
 
 import protocols
-import voxel
+import voxgrid
 import metaimage
 
 
@@ -51,13 +51,13 @@ class ColourVoxel(protocols.Voxel):
             tensor.detach().squeeze().cpu().permute(1, 2, 3, 0).numpy(), title=title
         )
 
-    def create_mask(
+    def create_image(
         self, x_angle: float = 0.0, y_angle: float = 0.0, z_angle: float = 0.0
     ) -> metaimage.Mask:
         """Creates a mask from the voxel model from a given viewpoint."""
-        simple = voxel.TranspVoxel(self.array[:, :, :, 3])
+        simple = voxgrid.TranspVoxel(self.array[:, :, :, 3])
 
-        return simple.create_mask(x_angle, y_angle, z_angle)
+        return simple.create_image(x_angle, y_angle, z_angle)
 
     def create_image(
         self, x_angle: float = 0.0, y_angle: float = 0.0, z_angle: float = 0.0
@@ -83,7 +83,7 @@ class ColourVoxel(protocols.Voxel):
 
         for channel in range(self.array.shape[3]):
             array[:, :, :, channel] = (
-                voxel.TranspVoxel(array[:, :, :, channel])
+                voxgrid.TranspVoxel(array[:, :, :, channel])
                 .rotated(x_angle, y_angle, z_angle)
                 .as_array()
             )

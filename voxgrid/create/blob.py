@@ -1,4 +1,4 @@
-import voxel
+import voxgrid
 
 import numpy as np
 
@@ -19,7 +19,7 @@ def blob(
 
         voxel_space[x - r : x + r, y - r : y + r, z - r : z + r] = np.maximum(
             voxel_space[x - r : x + r, y - r : y + r, z - r : z + r],
-            voxel.create.sphere(r, border=0),
+            voxgrid.create.sphere(r, border=0),
         )
 
     return voxel_space

@@ -1,6 +1,6 @@
 import numpy as np
 
-import voxel
+import voxgrid
 
 RED = (1, 0, 0, 1)
 GREEN = (0, 1, 0, 1)
@@ -11,7 +11,7 @@ YELLOW = (1, 1, 0, 1)
 BLACK = (0, 0, 0, 1)
 
 
-def rubiks(side_length: int, space_size: tuple[int, int, int]) -> voxel.ColourVoxel:
+def rubiks(side_length: int, space_size: tuple[int, int, int]) -> voxgrid.ColourVoxel:
     """Create a cuboid with given side lengths inside of a larger space."""
     if (side_length - 4) % 3 != 0:
         raise ValueError("Side length must be 4 + 3n")
@@ -46,4 +46,4 @@ def rubiks(side_length: int, space_size: tuple[int, int, int]) -> voxel.ColourVo
     voxel_cuboid[top_edge, left_edge:right_edge, front_edge, :] = BLACK
     voxel_cuboid[bottom_edge, left_edge:right_edge, back_edge, :] = BLACK
 
-    return voxel.ColourVoxel(voxel_cuboid)
+    return voxgrid.ColourVoxel(voxel_cuboid)

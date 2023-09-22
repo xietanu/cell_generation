@@ -7,13 +7,13 @@ import numpy as np
 import torch
 
 import protocols
-import voxel
+import voxgrid
 import metaimage
 
 RED = (1, 0, 0)
 
 
-class SolidVoxel(protocols.Voxel):
+class TranspVoxel(protocols.Voxel):
     """Simple voxel class with a single channel."""
 
     title: str | None
@@ -23,6 +23,10 @@ class SolidVoxel(protocols.Voxel):
             raise ValueError(f"data must be 3-dimensional ({data.shape})")
         data = data.astype(np.float32)
         self.array = (data - data.min()) / (data.max() - data.min())
+        self.alpha_adjust = np.log2(self.array.shape[0]) + 2
+        self.array = self.array**self.alpha_adjust
+        self.array = np.clip(self.array, 0, 1)
+
         self.title = title
 
     @property
@@ -39,16 +43,16 @@ class SolidVoxel(protocols.Voxel):
         return torch.from_numpy(self.array.copy()[np.newaxis, ...])
 
     @classmethod
-    def from_array(cls, array, *, title: str | None = None) -> SolidVoxel:
+    def from_array(cls, array, *, title: str | None = None) -> TranspVoxel:
         """Creates a SimpleVoxel from a numpy array."""
         return cls(array, title=title)
 
     @classmethod
-    def from_tensor(cls, tensor, *, title: str | None = None) -> SolidVoxel:
+    def from_tensor(cls, tensor, *, title: str | None = None) -> TranspVoxel:
         """Creates a SimpleVoxel from a PyTorch tensor."""
         return cls(tensor.detach().squeeze().cpu().numpy(), title=title)
 
-    def create_mask(
+    def create_image(
         self, x_angle: float = 0.0, y_angle: float = 0.0, z_angle: float = 0.0
     ) -> metaimage.Mask:
         """Creates a mask from the voxel model from a given viewpoint."""
@@ -57,21 +61,35 @@ class SolidVoxel(protocols.Voxel):
         else:
             rotated = self
 
-        mask = np.max(rotated.array, axis=2)
+        image = np.zeros((self.shape[0], self.shape[1]), dtype=np.float32)
 
-        mask[mask >= 0.5] = 1
-        mask[mask < 0.5] = 0
+        for level in reversed(range(self.shape[2])):
+            alpha = rotated.array[:, :, level]
+            image = image * (1 - alpha) + alpha
 
-        return metaimage.Mask.from_array(mask)
+        return metaimage.Mask.from_array(image)
 
-    def rotated(self, x_angle: float, y_angle: float, z_angle: float) -> SolidVoxel:
+    def rotated(self, x_angle: float, y_angle: float, z_angle: float) -> TranspVoxel:
         """Returns a rotated version of the voxel model."""
-        rotate_matrix = voxel.transform.create_rotation_matrix(
+        rotate_matrix = voxgrid.transform.create_rotation_matrix(
             x_angle, y_angle, z_angle
+        )[np.newaxis, :3, :4]
+
+        affine_grid = torch.nn.functional.affine_grid(
+            torch.from_numpy(rotate_matrix),
+            [1, 1, *self.shape],
+            align_corners=False,
+        ).float()
+
+        view = torch.nn.functional.grid_sample(
+            self.as_tensor().float()[np.newaxis, ...],
+            affine_grid,
+            mode="bilinear",
+            padding_mode="zeros",
+            align_corners=False,
         )
-        return SolidVoxel(
-            voxel.transform.apply_transform(self.array, rotate_matrix, centred=True)
-        )
+
+        return TranspVoxel.from_tensor(view[0, 0, ...])
 
     def plot(
         self,
@@ -85,7 +103,13 @@ class SolidVoxel(protocols.Voxel):
 
         array = self.as_array()
 
-        ax.voxels(array >= 0.5, edgecolor="none", facecolors=RED, shade=True)  # type: ignore
+        colours = np.zeros(array.shape + (4,), dtype=np.float32)
+        colours[..., 3] = array
+        colours[..., :3] = RED
+
+        ax.voxels(  # type: ignore
+            array > 0.01, edgecolor="none", facecolors=colours[:, :, :], shade=True
+        )
         ax.view_init(*angle_adjust)  # type: ignore
 
         if self.title is not None:
@@ -109,11 +133,17 @@ class SolidVoxel(protocols.Voxel):
 
         array = self.as_array()
 
-        ax.voxels(array >= 0.5, edgecolor="none", facecolors=RED, shade=True)
+        colours = np.zeros(array.shape + (4,), dtype=np.float32)
+        colours[..., 3] = array
+        colours[..., :3] = RED
+
+        ax.voxels(
+            array > 0.25, edgecolor="none", facecolors=colours[:, :, :], shade=True
+        )
         ax.view_init(*angle_adjust)
 
         if self.title is not None:
             ax.set_title(self.title)
 
-    def copy(self) -> SolidVoxel:
-        return SolidVoxel(self.array)
+    def copy(self) -> TranspVoxel:
+        return TranspVoxel(self.array)

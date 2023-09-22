@@ -2,10 +2,10 @@ import itertools
 
 import numpy as np
 
-import voxel
+import voxgrid
 
 
-def spheroid(length_multi, r, space_size) -> voxel.TranspVoxel:
+def spheroid(length_multi, r, space_size) -> voxgrid.TranspVoxel:
     """
     Create a sphere of size `size` with space around for rotation.
     """
@@ -19,4 +19,4 @@ def spheroid(length_multi, r, space_size) -> voxel.TranspVoxel:
         ) ** 2 <= r**2:
             voxel_sphere[x, y, z] = 1
 
-    return voxel.TranspVoxel(voxel_sphere)
+    return voxgrid.TranspVoxel(voxel_sphere)
