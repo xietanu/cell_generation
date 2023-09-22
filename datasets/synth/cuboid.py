@@ -3,7 +3,7 @@ import numpy as np
 import torch.utils.data
 import torchvision.transforms
 
-import voxel
+import voxgrid
 
 
 class Cuboid(torch.utils.data.Dataset):
@@ -64,9 +64,9 @@ class Cuboid(torch.utils.data.Dataset):
             )
         )
 
-        cuboid = voxel.create.cuboid(side_lengths, self.space_size)  # type: ignore
+        cuboid = voxgrid.create.cuboid(side_lengths, self.space_size)  # type: ignore
 
-        mask = cuboid.create_mask(*np.random.uniform(0, 2 * np.pi, size=3))
+        mask = cuboid.rotated(*np.random.uniform(0, 2 * np.pi, size=3)).create_image()
 
         return (
             mask.as_array(),
