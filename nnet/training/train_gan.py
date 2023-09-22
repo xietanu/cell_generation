@@ -45,7 +45,7 @@ class GANTrainer:
         train_loader,
         val_loader,
         epochs,
-        device: str = "cuda",
+        device: torch.device = torch.device("cuda:0"),
         *,
         path: Optional[str] = None,
         noise: float = 0.0,
@@ -53,12 +53,8 @@ class GANTrainer:
         dis_train_thresh: float | None = 2.5,
     ):
         """Train the model for the given number of epochs."""
-        if device == "cuda":
-            self.generator.cuda()
-            self.discriminator.cuda()
-        else:
-            self.generator.cpu()
-            self.discriminator.cpu()
+        generator = self.generator.to(device)
+        discriminator = self.discriminator.to(device)
 
         progress = tqdm(
             range(epochs),
@@ -71,8 +67,8 @@ class GANTrainer:
         self._update_progress(progress, 0, epochs)
 
         train_gen_loss, train_dis_loss = self.score_one_epoch(
-            self.generator,
-            self.discriminator,
+            generator,
+            discriminator,
             device,
             val_loader,
         )
@@ -81,8 +77,8 @@ class GANTrainer:
 
         for _ in progress:
             tg, td, tgl, tdl = self.train_one_epoch(
-                self.generator,
-                self.discriminator,
+                generator,
+                discriminator,
                 device,
                 train_loader,
                 noise,
@@ -101,10 +97,7 @@ class GANTrainer:
             trained_dis += td
 
             val_gen_loss, val_dis_loss = self.score_one_epoch(
-                self.generator,
-                self.discriminator,
-                device,
-                val_loader,
+                generator, discriminator, device, val_loader, noise
             )
 
             self.log.add_step(
@@ -271,6 +264,7 @@ class GANTrainer:
         discriminator,
         device,
         val_loader,
+        label_noise=0.0,
     ):
         """Train the model for one epoch."""
         generator.eval()
@@ -294,7 +288,7 @@ class GANTrainer:
 
             discriminator.zero_grad()
 
-            labels = torch.ones(batch_size, device=device) * REAL_LABEL
+            labels = torch.ones(batch_size, device=device) * -label_noise/2 + REAL_LABEL
 
             output = discriminator(real_cpu).view(-1)
             dis_loss_real = criterion(output, labels)
@@ -310,7 +304,7 @@ class GANTrainer:
             if isinstance(fake, tuple):
                 fake = fake[0]
 
-            labels = torch.ones(batch_size, device=device) * FAKE_LABEL
+            labels = torch.ones(batch_size, device=device) * label_noise/2 + FAKE_LABEL
 
             output = discriminator(fake.detach()).view(-1)
 
@@ -322,7 +316,7 @@ class GANTrainer:
 
             ###GENERATOR###
             generator.zero_grad()
-            labels = torch.ones(batch_size, device=device) * REAL_LABEL
+            labels = torch.ones(batch_size, device=device) * -label_noise/2 + REAL_LABEL
 
             output = discriminator(fake).view(-1)
 
