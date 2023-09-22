@@ -10,7 +10,7 @@ def create_resnet_block_simple_3d(
     out_channels: int,
     kernel_size: int = 3,
     stochastic_depth_rate=0.0,
-    dropout: float = 0.0,
+    dropout: float | torch.nn.Module = 0.0,
     activation: type[torch.nn.Module] = torch.nn.GELU,
 ) -> torch.nn.Module:
     """Basic two layer resnet block."""
@@ -53,14 +53,14 @@ def create_resnet_block_simple_3d(
             activation=activation,
             stochastic_depth_rate=stochastic_depth_rate,
         ),
-        torch.nn.Dropout3d(dropout),
+        torch.nn.Dropout3d(dropout) if isinstance(dropout, float) else dropout,
     )
 
 
 def create_resnet_3d_factory(
     kernel_size: int = 3,
     stochastic_depth_rate=0.0,
-    dropout: float = 0.0,
+    dropout: float | torch.nn.Module = 0.0,
     min_dropout_channels: int = 4,
     activation: type[torch.nn.Module] = torch.nn.GELU,
 ):

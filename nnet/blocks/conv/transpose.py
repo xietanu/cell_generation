@@ -14,7 +14,7 @@ class TransposeConvBlock(torch.nn.Module):
         stride: int = 2,
         activation: type[torch.nn.Module] = torch.nn.GELU,
         use_batch_norm: bool = True,
-        dropout: float = 0.0,
+        dropout: float | torch.nn.Module = 0.0,
         use_3d: bool = False,
         padding: int | None = None,
     ):
@@ -26,11 +26,15 @@ class TransposeConvBlock(torch.nn.Module):
         if use_3d:
             conv_type = torch.nn.ConvTranspose3d
             batch_norm = torch.nn.BatchNorm3d
-            dropout_type = torch.nn.Dropout3d
+            dropout_type = (
+                torch.nn.Dropout3d(dropout) if isinstance(dropout, float) else dropout
+            )
         else:
             conv_type = torch.nn.ConvTranspose2d
             batch_norm = torch.nn.BatchNorm2d
-            dropout_type = torch.nn.Dropout2d
+            dropout_type = (
+                torch.nn.Dropout2d(dropout) if isinstance(dropout, float) else dropout
+            )
 
         padding = padding or (kernel_size - stride + 1) // 2
 
@@ -51,8 +55,8 @@ class TransposeConvBlock(torch.nn.Module):
 
         layers.append(activation())
 
-        if dropout > 0.0:
-            layers.append(dropout_type(dropout))
+        if isinstance(dropout, torch.nn.Module) or dropout > 0.0:
+            layers.append(dropout_type)  # type: ignore
 
         self.conv = torch.nn.Sequential(*layers)
 
@@ -66,7 +70,7 @@ def create_transpose_conv_factory(
     use_3d: bool = False,
     activation: type[torch.nn.Module] = torch.nn.GELU,
     use_batch_norm: bool = True,
-    dropout: float = 0.0,
+    dropout: float | torch.nn.Module = 0.0,
 ):
     def create_block(
         in_dim: int, out_dim: int, *, factor: int = 2, **kwargs
