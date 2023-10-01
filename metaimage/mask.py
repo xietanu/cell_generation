@@ -20,8 +20,10 @@ class Mask(protocols.MetaImage):
         else:
             numpy_data = data.copy()
 
-        if numpy_data.ndim != 2:
-            raise ValueError("Mask must be 2D")
+        if numpy_data.ndim not in (2, 3):
+            raise ValueError("Mask must be 2D (greyscale) or 3D (Grey + alpha)")
+        if numpy_data.ndim == 3 and numpy_data.shape[2] != 2:
+            raise ValueError("3D mask must be grey + alpha (2 colour channels)")
 
         if numpy_data.max() - numpy_data.min() == 0:
             numpy_data[:, :] = -1
@@ -53,7 +55,19 @@ class Mask(protocols.MetaImage):
     ) -> matplotlib.figure.Figure:
         """Plots the mask as a matplotlib figure."""
         fig = plt.figure(figsize=figsize)
-        fig.gca().imshow(self.as_array(), cmap="gray", vmin=-1, vmax=1)
+
+        array = np.zeros(
+            (self.array.shape[0], self.array.shape[1], 4), dtype=np.float32
+        )
+
+        if self.array.ndim == 2:
+            array[:, :, :3] = self.array[:, :, np.newaxis]
+            array[:, :, 3] = 1
+        else:
+            array[:, :, :3] = self.array[:, :, 0, np.newaxis]
+            array[:, :, 3] = self.array[:, :, 1]
+
+        fig.gca().imshow(array / 2 + 0.5)
         if self.title is not None:
             fig.suptitle(self.title)
 
@@ -68,7 +82,19 @@ class Mask(protocols.MetaImage):
     ):
         """Plots the mask as a matplotlib subfigure."""
         axes = fig.add_subplot(subplot_shape[1], subplot_shape[0], index + 1)
-        axes.imshow(self.array, cmap="gray", vmin=-1, vmax=1, **kwargs)
+
+        array = np.zeros(
+            (self.array.shape[0], self.array.shape[1], 4), dtype=np.float32
+        )
+
+        if self.array.ndim == 2:
+            array[:, :, :3] = self.array[:, :, np.newaxis]
+            array[:, :, 3] = 1
+        else:
+            array[:, :, :3] = self.array[:, :, 0, np.newaxis]
+            array[:, :, 3] = self.array[:, :, 1]
+
+        axes.imshow(array / 2 + 0.5, **kwargs)
         if self.title is not None:
             axes.set_title(self.title)
 
