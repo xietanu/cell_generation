@@ -51,6 +51,7 @@ class GANTrainer:
         noise: float = 0.0,
         gen_train_thresh: float | None = 2.5,
         dis_train_thresh: float | None = 2.5,
+        bookmark_every: int = 10,
     ):
         """Train the model for the given number of epochs."""
         generator = self.generator.to(device)
@@ -105,10 +106,10 @@ class GANTrainer:
                 train_dis_loss=val_dis_loss,
             )
 
-            if path and self.epoch % 10 == 0:
-                self.save_state(path + f"_{self.epoch // 10}.pt", val_gen_loss)
-
             self.epoch += 1
+
+            if path and self.epoch % bookmark_every == 0:
+                self.save_state(path + f"_{self.epoch}.pt", val_gen_loss)
 
             self._update_progress(
                 progress,
@@ -288,7 +289,9 @@ class GANTrainer:
 
             discriminator.zero_grad()
 
-            labels = torch.ones(batch_size, device=device) * -label_noise/2 + REAL_LABEL
+            labels = (
+                torch.ones(batch_size, device=device) * -label_noise / 2 + REAL_LABEL
+            )
 
             output = discriminator(real_cpu).view(-1)
             dis_loss_real = criterion(output, labels)
@@ -304,7 +307,9 @@ class GANTrainer:
             if isinstance(fake, tuple):
                 fake = fake[0]
 
-            labels = torch.ones(batch_size, device=device) * label_noise/2 + FAKE_LABEL
+            labels = (
+                torch.ones(batch_size, device=device) * label_noise / 2 + FAKE_LABEL
+            )
 
             output = discriminator(fake.detach()).view(-1)
 
@@ -316,7 +321,9 @@ class GANTrainer:
 
             ###GENERATOR###
             generator.zero_grad()
-            labels = torch.ones(batch_size, device=device) * -label_noise/2 + REAL_LABEL
+            labels = (
+                torch.ones(batch_size, device=device) * -label_noise / 2 + REAL_LABEL
+            )
 
             output = discriminator(fake).view(-1)
 
