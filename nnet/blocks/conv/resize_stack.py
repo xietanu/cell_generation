@@ -28,12 +28,12 @@ class ResizeStack(torch.nn.Module):
             smaller = out_shape
             downsample = True
 
-        scale_factor = smaller[0] // bigger[0]
+        # scale_factor = smaller[0] // bigger[0]
 
-        if not all(
-            bigger[i] // scale_factor == smaller[i] for i in range(1, len(in_shape))
-        ):
-            raise ValueError("Inconsistent scaling factors not supported")
+        # if not all(
+        #     bigger[i] // scale_factor == smaller[i] for i in range(1, len(in_shape))
+        # ):
+        #     raise ValueError("Inconsistent scaling factors not supported")
 
         self.layer_schedule = create_layer_schedule(
             smaller[0] // bigger[0],
