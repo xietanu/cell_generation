@@ -5,7 +5,7 @@ import numpy as np
 import voxgrid
 
 
-def spheroid(length_multi, r, space_size) -> voxgrid.TranspVoxel:
+def spheroid(length_multi, r, space_size) -> voxgrid.VoxGrid:
     """
     Create a sphere of size `size` with space around for rotation.
     """
@@ -15,8 +15,8 @@ def spheroid(length_multi, r, space_size) -> voxgrid.TranspVoxel:
         range(space_size[0]), range(space_size[1]), range(space_size[2])
     ):
         if (x - space_size[0] // 2) ** 2 + (y - space_size[1] // 2) ** 2 + (
-            (z - space_size[2] // 2) * 1 / length_multi
+            (z - space_size[2] // 2) / length_multi
         ) ** 2 <= r**2:
             voxel_sphere[x, y, z] = 1
 
-    return voxgrid.TranspVoxel(voxel_sphere)
+    return voxgrid.VoxGrid(voxel_sphere)

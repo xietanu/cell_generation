@@ -5,7 +5,7 @@ import voxgrid
 
 
 def cuboid(
-    sides: tuple[int, int, int], space_size: tuple[int, int, int]
+    sides: tuple[int, int, int], space_size: tuple[int, int, int], alpha: float = 1
 ) -> voxgrid.VoxGrid:
     """Create a cuboid with given side lengths inside of a larger space."""
     height, width, depth = sides
@@ -21,7 +21,12 @@ def cuboid(
     front_edge = (space_depth - depth) // 2
     back_edge = front_edge + depth
 
-    voxel_cuboid = np.zeros(space_size, dtype=np.uint8)
-    voxel_cuboid[top_edge:bottom_edge, left_edge:right_edge, front_edge:back_edge] = 1
+    voxel_cuboid = np.zeros(space_size, dtype=np.float32)
+    voxel_cuboid[top_edge:bottom_edge, left_edge:right_edge, front_edge] = alpha
+    voxel_cuboid[top_edge:bottom_edge, left_edge:right_edge, back_edge - 1] = alpha
+    voxel_cuboid[top_edge:bottom_edge, left_edge, front_edge:back_edge] = alpha
+    voxel_cuboid[top_edge:bottom_edge, right_edge - 1, front_edge:back_edge] = alpha
+    voxel_cuboid[top_edge, left_edge:right_edge, front_edge:back_edge] = alpha
+    voxel_cuboid[bottom_edge - 1, left_edge:right_edge, front_edge:back_edge] = alpha
 
     return voxgrid.VoxGrid(voxel_cuboid)

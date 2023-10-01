@@ -11,11 +11,8 @@ YELLOW = (1, 1, 0, 1)
 BLACK = (0, 0, 0, 1)
 
 
-def rubiks(side_length: int, space_size: tuple[int, int, int]) -> voxgrid.ColourVoxel:
+def rubiks(side_length: int, space_size: tuple[int, int, int]) -> voxgrid.VoxGrid:
     """Create a cuboid with given side lengths inside of a larger space."""
-    if (side_length - 4) % 3 != 0:
-        raise ValueError("Side length must be 4 + 3n")
-
     space_height, space_width, space_depth = space_size
 
     top_edge = (space_height - side_length) // 2
@@ -27,23 +24,50 @@ def rubiks(side_length: int, space_size: tuple[int, int, int]) -> voxgrid.Colour
 
     voxel_cuboid = np.zeros((*space_size, 4), dtype=np.float32)
 
-    voxel_cuboid[top_edge:bottom_edge, left_edge:right_edge, front_edge, :] = RED
-    voxel_cuboid[top_edge:bottom_edge, left_edge:right_edge, back_edge, :] = ORANGE
-    voxel_cuboid[top_edge:bottom_edge, left_edge, front_edge:back_edge, :] = YELLOW
-    voxel_cuboid[top_edge:bottom_edge, right_edge, front_edge:back_edge, :] = WHITE
-    voxel_cuboid[top_edge, left_edge:right_edge, front_edge:back_edge, :] = BLUE
-    voxel_cuboid[bottom_edge, left_edge:right_edge, front_edge:back_edge, :] = GREEN
-    voxel_cuboid[top_edge, left_edge, front_edge:back_edge, :] = BLACK
-    voxel_cuboid[top_edge, right_edge, front_edge:back_edge, :] = BLACK
-    voxel_cuboid[bottom_edge, left_edge, front_edge:back_edge, :] = BLACK
-    voxel_cuboid[bottom_edge, right_edge, front_edge:back_edge, :] = BLACK
-    voxel_cuboid[top_edge:bottom_edge, left_edge, front_edge, :] = BLACK
-    voxel_cuboid[top_edge:bottom_edge, right_edge, front_edge, :] = BLACK
-    voxel_cuboid[top_edge:bottom_edge, left_edge, back_edge, :] = BLACK
-    voxel_cuboid[top_edge:bottom_edge, right_edge, back_edge, :] = BLACK
-    voxel_cuboid[top_edge, left_edge:right_edge, back_edge, :] = BLACK
-    voxel_cuboid[bottom_edge, left_edge:right_edge, front_edge, :] = BLACK
-    voxel_cuboid[top_edge, left_edge:right_edge, front_edge, :] = BLACK
-    voxel_cuboid[bottom_edge, left_edge:right_edge, back_edge, :] = BLACK
+    voxel_cuboid[
+        top_edge:bottom_edge,
+        left_edge:right_edge,
+        front_edge:back_edge,
+    ] = full_rubiks((side_length, side_length, side_length))
 
-    return voxgrid.ColourVoxel(voxel_cuboid)
+    voxel_cuboid[
+        top_edge + 1 : bottom_edge - 1,
+        left_edge + 1 : right_edge - 1,
+        front_edge + 1 : back_edge - 1,
+    ] = full_rubiks((side_length - 2, side_length - 2, side_length - 2))
+
+    voxel_cuboid[
+        top_edge + 2 : bottom_edge - 2,
+        left_edge + 2 : right_edge - 2,
+        front_edge + 2 : back_edge - 2,
+    ] = full_rubiks((side_length - 4, side_length - 4, side_length - 4))
+
+    return voxgrid.VoxGrid(voxel_cuboid)
+
+
+def full_rubiks(space_size):
+    voxel_cuboid = np.zeros((*space_size, 4), dtype=np.float32)
+
+    voxel_cuboid[0, :, :, :] = WHITE
+    voxel_cuboid[-1, :, :, :] = YELLOW
+    voxel_cuboid[:, 0, :, :] = ORANGE
+    voxel_cuboid[:, -1, :, :] = RED
+    voxel_cuboid[:, :, 0, :] = GREEN
+    voxel_cuboid[:, :, -1, :] = BLUE
+
+    voxel_cuboid[0, 0, :, :] = WHITE
+    voxel_cuboid[-1, 0, :, :] = WHITE
+    voxel_cuboid[0, -1, :, :] = WHITE
+    voxel_cuboid[-1, -1, :, :] = WHITE
+
+    voxel_cuboid[0, :, 0, :] = WHITE
+    voxel_cuboid[-1, :, 0, :] = WHITE
+    voxel_cuboid[0, :, -1, :] = WHITE
+    voxel_cuboid[-1, :, -1, :] = WHITE
+
+    voxel_cuboid[:, 0, 0, :] = WHITE
+    voxel_cuboid[:, -1, 0, :] = WHITE
+    voxel_cuboid[:, 0, -1, :] = WHITE
+    voxel_cuboid[:, -1, -1, :] = WHITE
+
+    return voxel_cuboid
