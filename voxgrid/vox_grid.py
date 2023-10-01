@@ -53,9 +53,11 @@ class VoxGrid(protocols.Voxel):
         """Returns the voxel model as a PyTorch tensor."""
         return voxgrid.convert.numpy_to_torch(self.array)
 
-    def create_image(self) -> metaimage.Mask:
+    def create_image(self) -> protocols.MetaImage:
         """Creates an image from the voxel model."""
-        return metaimage.Mask(voxgrid.convert.create_image(self.array))  # type: ignore
+        if voxgrid.get_n_channels(self.array) in (0, 1, 2):
+            return metaimage.Mask(voxgrid.convert.create_image(self.array))  # type: ignore
+        return metaimage.ColourImage(voxgrid.convert.create_image(self.array))  # type: ignore
 
     def rotated(
         self, x_angle: float = 0, y_angle: float = 0, z_angle: float = 0
@@ -105,7 +107,7 @@ class VoxGrid(protocols.Voxel):
         array = self.as_array()
 
         colours = np.zeros(array.shape[:3] + (4,), dtype=np.float32)
-        colours[..., 3] = array[:, :, :, -1]
+        colours[..., 3] = np.round(array[:, :, :, -1], 2)
         if array.shape[-1] == 1:
             colours[..., :3] = BLUE
         else:
