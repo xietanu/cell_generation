@@ -14,6 +14,7 @@ def grid(
     items: Iterable[protocols.Plotable | TitledItem | None]
     | Iterable[Iterable[protocols.Plotable | TitledItem | None]],
     figsize: tuple[float, float] = (12, 12),
+    title: str | None = None,
 ) -> matplotlib.figure.Figure:
     """Plots the items in a grid."""
     item_grid: list[list[protocols.Plotable | TitledItem | None]] = [
@@ -42,5 +43,9 @@ def grid(
                 (row_length, column_length),
                 i * row_length + j,
             )
+    if title:
+        figure.suptitle(title)
+        
+    figure.tight_layout()
 
     return figure
