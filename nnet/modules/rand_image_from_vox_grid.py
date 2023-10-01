@@ -18,7 +18,9 @@ class RandomImageFromVoxGrid(torch.nn.Module):
         super().cuda(device=device)
         self.device = device
 
-    def forward(self, in_tensor: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, in_tensor: torch.Tensor, background: torch.Tensor | None = None
+    ) -> torch.Tensor:
         rotated = voxgrid.transform.randomly_rotated(in_tensor, device=self.device)
 
-        return voxgrid.convert.create_image(rotated, device=self.device)  # type: ignore
+        return voxgrid.convert.create_image(rotated, device=self.device, background=background)  # type: ignore
