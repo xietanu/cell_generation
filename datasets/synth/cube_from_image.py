@@ -6,18 +6,20 @@ import torchvision.transforms
 import voxgrid
 
 
-class Rubiks(torch.utils.data.Dataset):
+class CubeFromImage(torch.utils.data.Dataset):
     """Dataset for testing colour voxel generation."""
 
     def __init__(
         self,
-        side_length: int,
+        image_path: str,
+        grey: bool,
         space_size: tuple[int, int, int],
         num_images: int,
         *,
         train: bool = False,
     ):
-        self.side_length = side_length
+        self.image_path = image_path
+        self.grey = grey
         self.img_size = space_size[:2]
         self.space_size = space_size
         self.train = train
@@ -55,7 +57,9 @@ class Rubiks(torch.utils.data.Dataset):
         )
 
     def _create_cuboid_set(self):
-        cube = voxgrid.create.rubiks(self.side_length, self.space_size)
+        cube = voxgrid.create.cube_from_image(
+            self.image_path, self.space_size, self.grey
+        )
 
         image = cube.rotated(*np.random.uniform(0, 2 * np.pi, size=3)).create_image()
 

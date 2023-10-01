@@ -15,10 +15,17 @@ class CachedImages(torch.utils.data.Dataset):
         self,
         image_folder: str,
         image_names: np.ndarray,
+        *,
         train=False,
+        grayscale=False,
+        crop: float = 1,
+        size: tuple[int, int] = (32, 32),
     ):
         self.img_folder = image_folder
         self.train = train
+        self.grayscale = grayscale
+        self.crop = crop
+        self.size = size
         self.train_transform = torchvision.transforms.Compose(
             [
                 torchvision.transforms.ToTensor(),
@@ -27,7 +34,6 @@ class CachedImages(torch.utils.data.Dataset):
                 ),
                 torchvision.transforms.RandomHorizontalFlip(),
                 torchvision.transforms.RandomVerticalFlip(),
-                # torchvision.transforms.RandomRotation(180, fill=-1),
             ]
         )
         self.transform = torchvision.transforms.Compose(
@@ -39,10 +45,7 @@ class CachedImages(torch.utils.data.Dataset):
             ]
         )
         self.images = image_names
-        self.cached_pairs = [
-            cv2.imread(os.path.join(self.img_folder, img_name), cv2.IMREAD_GRAYSCALE)
-            for img_name in self.images
-        ]
+        self.cached_images = [self.get_image(img_name) for img_name in self.images]
 
     def __getitem__(self, index):
         if self.train:
@@ -50,15 +53,33 @@ class CachedImages(torch.utils.data.Dataset):
         else:
             transform = self.transform
 
-        mask = self.cached_pairs[index]
+        mask = self.cached_images[index]
 
         return (
             transform(mask),
             self.transform(mask),
         )
 
+    def get_image(self, name):
+        mask = cv2.imread(
+            os.path.join(self.img_folder, name),
+            cv2.IMREAD_GRAYSCALE if self.grayscale else cv2.IMREAD_COLOR,
+        )
+
+        top = int((1 - self.crop) * mask.shape[0] / 2)
+        height = mask.shape[0] - 2 * top
+        left = int((1 - self.crop) * mask.shape[1] / 2)
+        width = mask.shape[1] - 2 * left
+
+        mask = mask[top : top + height, left : left + width]
+
+        if self.size != (mask.shape[0], mask.shape[1]):
+            mask = cv2.resize(mask, self.size)
+
+        return mask
+
     def __len__(self):
-        return len(self.cached_pairs)
+        return len(self.cached_images)
 
 
 def split_folder(folder: str, train_ratio: float, max_images: int | None = None):

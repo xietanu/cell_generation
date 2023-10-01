@@ -3,7 +3,7 @@ import numpy as np
 import torch.utils.data
 import torchvision.transforms
 
-import voxel
+import voxgrid
 
 
 class Spheroid(torch.utils.data.Dataset):
@@ -38,7 +38,6 @@ class Spheroid(torch.utils.data.Dataset):
                 ),
                 torchvision.transforms.RandomHorizontalFlip(),
                 torchvision.transforms.RandomVerticalFlip(),
-                torchvision.transforms.RandomRotation(180, fill=-1),
             ]
         )
         self.generated_images = [self._create_spheroid_set() for _ in range(num_images)]
@@ -59,12 +58,13 @@ class Spheroid(torch.utils.data.Dataset):
         )
 
     def _create_spheroid_set(self):
-        r = np.random.randint(self.r_range[0], self.r_range[1] + 1, dtype=int)
         length_multiplier = np.random.uniform(*self.length_multiplier_range)
+        r = int(np.random.uniform(self.r_range[0], self.r_range[1]) / length_multiplier)
+    
 
-        cuboid = voxel.create.spheroid(length_multiplier, r, self.space_size)  # type: ignore
+        cuboid = voxgrid.create.spheroid(length_multiplier, r, self.space_size)  # type: ignore
 
-        mask = cuboid.create_mask(*np.random.uniform(0, 2 * np.pi, size=3))
+        mask = cuboid.create_image(*np.random.uniform(0, 2 * np.pi, size=3))
 
         return (
             mask.as_array(),

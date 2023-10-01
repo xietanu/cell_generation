@@ -1,4 +1,4 @@
-"""Dataset for testing colour voxel generation."""
+"""Dataset for cuboid generation."""
 import numpy as np
 import torch.utils.data
 import torchvision.transforms
@@ -6,18 +6,18 @@ import torchvision.transforms
 import voxgrid
 
 
-class Rubiks(torch.utils.data.Dataset):
-    """Dataset for testing colour voxel generation."""
+class Pyramid(torch.utils.data.Dataset):
+    """Dataset for cuboid generation."""
 
     def __init__(
         self,
-        side_length: int,
+        size: tuple[int, int, int],
         space_size: tuple[int, int, int],
         num_images: int,
         *,
         train: bool = False,
     ):
-        self.side_length = side_length
+        self.size = size
         self.img_size = space_size[:2]
         self.space_size = space_size
         self.train = train
@@ -35,9 +35,12 @@ class Rubiks(torch.utils.data.Dataset):
                 torchvision.transforms.Lambda(
                     lambda x: 2 * (x - x.min()) / (x.max() - x.min()) - 1
                 ),
+                torchvision.transforms.RandomHorizontalFlip(),
+                torchvision.transforms.RandomVerticalFlip(),
+                torchvision.transforms.RandomRotation(180, fill=-1),
             ]
         )
-        self.generated_images = [self._create_cuboid_set() for _ in range(num_images)]
+        self.generated_images = [self._create_pyramid_set() for _ in range(num_images)]
 
     def __getitem__(self, index):
         if self.train:
@@ -54,16 +57,16 @@ class Rubiks(torch.utils.data.Dataset):
             ),
         )
 
-    def _create_cuboid_set(self):
-        cube = voxgrid.create.rubiks(self.side_length, self.space_size)
+    def _create_pyramid_set(self):
+        pyramid = voxgrid.create.pyramid(self.size, self.space_size)  # type: ignore
 
-        image = cube.rotated(*np.random.uniform(0, 2 * np.pi, size=3)).create_image()
+        mask = pyramid.create_image(*np.random.uniform(0, 2 * np.pi, size=3))
 
         return (
-            image.as_array(),
+            mask.as_array(),
             (
-                image.as_array(),
-                cube.as_array(),
+                mask.as_array(),
+                pyramid.as_array(),
             ),
         )
 

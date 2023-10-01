@@ -16,7 +16,12 @@ class Cuboid(torch.utils.data.Dataset):
         num_images: int,
         *,
         train: bool = False,
+        alpha: float = 1,
+        noise: float = 0,
     ):
+        if noise < 0 or noise > 1:
+            raise ValueError("noise must be between 0 and 1")
+
         self.side_range = side_range
         self.img_size = space_size[:2]
         self.space_size = space_size
@@ -37,10 +42,11 @@ class Cuboid(torch.utils.data.Dataset):
                 ),
                 torchvision.transforms.RandomHorizontalFlip(),
                 torchvision.transforms.RandomVerticalFlip(),
-                torchvision.transforms.RandomRotation(180, fill=-1),
             ]
         )
-        self.generated_images = [self._create_cuboid_set() for _ in range(num_images)]
+        self.generated_images = [
+            self._create_cuboid_set(alpha, noise) for _ in range(num_images)
+        ]
 
     def __getitem__(self, index):
         if self.train:
@@ -57,21 +63,27 @@ class Cuboid(torch.utils.data.Dataset):
             ),
         )
 
-    def _create_cuboid_set(self):
+    def _create_cuboid_set(self, alpha: float = 1, noise: float = 0):
         side_lengths = tuple(
             np.random.randint(
                 self.side_range[0], self.side_range[1] + 1, size=3, dtype=int
             )
         )
 
-        cuboid = voxgrid.create.cuboid(side_lengths, self.space_size)  # type: ignore
+        cuboid = voxgrid.create.cuboid(side_lengths, self.space_size, alpha=alpha)  # type: ignore
 
         mask = cuboid.rotated(*np.random.uniform(0, 2 * np.pi, size=3)).create_image()
+        mask_array = mask.as_array()
+
+        if noise > 0:
+            noise_mask = np.random.uniform(-1, 1, size=mask_array.shape)
+            mask_array[noise_mask >= 1 - noise] = noise_mask[noise_mask >= 1 - noise]
+            mask_array[noise_mask <= -1 + noise] = noise_mask[noise_mask <= -1 + noise]
 
         return (
-            mask.as_array(),
+            mask_array,
             (
-                mask.as_array(),
+                mask_array,
                 cuboid.as_array(),
             ),
         )

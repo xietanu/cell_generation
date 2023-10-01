@@ -29,7 +29,6 @@ class AutoImgCached(torch.utils.data.Dataset):
                 ),
                 torchvision.transforms.RandomHorizontalFlip(),
                 torchvision.transforms.RandomVerticalFlip(),
-                torchvision.transforms.RandomRotation(180, fill=-1),
             ]
         )
         self.transform = torchvision.transforms.Compose(
