@@ -12,7 +12,27 @@ def create_resnet_bottleneck(
     activation: type[torch.nn.Module] = torch.nn.GELU,
     stochastic_depth_rate: float = 0.0,
 ) -> nnet.blocks.resnet.ResnetBlock:
-    """Initialize the bottleneck resnet block."""
+    """^Create a bottleneck resnet block.
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels.
+    out_channels : int
+        Number of output channels.
+    kernel_size : int, optional
+        Kernel size, by default 3
+    activation : type[torch.nn.Module], optional
+        Activation function module, by default torch.nn.GELU
+    stochastic_depth_rate : float, optional
+        During training, this block is skipped this percentage of the time, by default 0.0
+        Should be between 0 and 1.
+
+    Returns
+    -------
+    nnet.blocks.resnet.ResnetBlock
+        The created bottleneck resnet block torch module.
+    """
 
     layers = torch.nn.Sequential(
         torch.nn.Conv2d(

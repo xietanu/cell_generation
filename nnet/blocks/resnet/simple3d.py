@@ -13,7 +13,34 @@ def create_resnet_block_simple_3d(
     dropout: float | torch.nn.Module = 0.0,
     activation: type[torch.nn.Module] = torch.nn.GELU,
 ) -> torch.nn.Module:
-    """Basic two layer resnet block."""
+    """Create a basic two layer resnet block for 3D convolution.
+
+    Parameters
+    ----------
+    in_channels : int
+        Input channels.
+    out_channels : int
+        Output channels.
+    kernel_size : int, optional
+        Kernel size, by default 3
+    stochastic_depth_rate : float, optional
+        During training, this block is skipped this percentage of the time, by default 0.0
+        Should be between 0 and 1.
+    dropout : float or torch.nn.Module, optional
+        When a float is provided, during training, channels are dropped out this
+        percentage of the time. Should be between 0 and 1, by default 0.0
+
+        If a module is provided, this is used as a dropout module. Used for implementing
+        more complex behaviours.
+    activation : type[torch.nn.Module], optional
+        Activation function module, by default torch.nn.GELU
+
+    Returns
+    -------
+    torch.nn.Module
+        The created two layer resnet block torch module.
+    """
+
     layers = torch.nn.Sequential(
         torch.nn.Conv3d(
             in_channels=in_channels,

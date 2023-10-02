@@ -1,0 +1,7 @@
+site_name: 3D Cell Generation Project Docs
+nav:
+  - Home: 'index.md'
+  - 'Modules':
+    - 'nnet': 'nnet.md'
+theme:
+  name: readthedocs
