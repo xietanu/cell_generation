@@ -35,9 +35,9 @@ def grid(
             if item is None:
                 continue
             if isinstance(item, tuple):
-                title = item[0]
+                subtitle = item[0]
                 item = item[1].copy()
-                item.title = title
+                item.title = subtitle
             item.plot_as_subfigure(
                 figure,
                 (row_length, column_length),
