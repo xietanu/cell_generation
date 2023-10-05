@@ -46,10 +46,9 @@ Contains functions to create convolutional layer blocks. Primarily for ease, to 
 
 A basic convolutional block, including a convolutional layer, batch normalization, activation and dropout layers. Whether each is used can be configured, with standard parameters assumed.
 
-
-
 ## nnet.modules
 
+Contains classes for non-standard modules for use in the generation architecture.
 
 ### nnet.modules.VoxGridAlphaAdjust
 
@@ -58,3 +57,46 @@ Adjusts the alpha channel of a voxel grid, such that when a view is created from
 This is done to address a problem that inhibits learning - when initialised, the resulting image typically has visibility into only the first few layers of the voxel grid, with information behind this completely lost. This makes it very hard for the model to learn to form shapes, as changes to the colour or alpha value of the vast majority of voxels has no impact early on. Making this adjustment removes this problem, and the model converges much faster and better accordingly.
 
 Additionally, this solution ensures there is a smooth transition throughout, and that all values from 0 to 1 remain accessible.
+
+### nnet.modules.RandomImageFromVoxGrid
+
+Takes in a 5D voxel grid tensor and returns a 4D image tensor, where the voxel grid is N x C x H x W x D and the image is N x C' x H x W. The voxel grid should have values of between 0 and 1 for all channels.
+
+The number of colour channels in the image is determined by the number in the voxel grid, such that:
+
+- A 1 channel voxel grid returns an image with 1 channel - the voxel grid is treated as an alpha channel, with value at each voxel being 1.
+- A 2 channel voxel grid returns an image with 1 channel - the voxel grid is treated as having a grey and an alpha channel.
+- A 4 channel voxel grid returns an image with 3 channels - the voxel grid is treated as RGBA.
+
+No other number number of channels are supported.
+
+The process for creating the image is as follows:
+
+- The voxel grid is randomly rotated along the X, Y and Z axes, maintaining its original size.
+    - Any required padding is done with border values.
+- Starting from the bottom layer, the voxels are interpretted as pixels and pasted onto the background, adjusting for the alpha layer.
+- This is repeated until the entire voxel grid has been processed.
+
+By default, the image will be layered on top of a flat black background. However, an additional tensor can be supplied to be used as a background. This tensor should be N x C' x H x W.
+
+As such, it is assumed the camera is positioned at infinite depth and the light is parallel. This is assumed to be sufficient for the purposes of this project, working with microscope images.
+
+If there are multiple voxel grids supplied, each will be rotated randomly separately (i.e. using different angles).
+
+### nnet.modules.RandomPatch
+
+Takes a random patch of the size supplied at initialization from an image tensor. The patch chosen is the same for the whole mini-batch.
+
+This is used for background and foreground creation, to ensure these are unable to learn the features of the primary object. Instead, they learn overall colour and noise.
+
+## nnet.generators
+
+Contains classes for creating generators, taking on more complex elements of the architecture.
+
+### nnet.generators.MaskGenerator
+
+This generator is provided with a voxel grid generator and produces a mask or image from it, for the purposes of training the generator through the GAN setup.
+
+It can addtionally take two further 2D image generators - one for the background, which should produce images with 1 or 3 channels, and one for the foreground, which should produce images with 2 or 4 channels. If a background generator is not supplied, a flat black background will be used. If a foreground generator is not supplied, no foreground will be added.
+
+This model is taken to help enable clean models to be produced by the generator. The foreground generator is primarily intended to generate noise or occlusions, while the background can create background colours and textures. 
