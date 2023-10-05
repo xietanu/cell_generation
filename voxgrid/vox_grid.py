@@ -56,8 +56,8 @@ class VoxGrid(protocols.Voxel):
     def create_image(self) -> protocols.MetaImage:
         """Creates an image from the voxel model."""
         if voxgrid.get_n_channels(self.array) in (0, 1, 2):
-            return metaimage.Mask(voxgrid.convert.create_image(self.array))  # type: ignore
-        return metaimage.ColourImage(voxgrid.convert.create_image(self.array))  # type: ignore
+            return metaimage.Mask(voxgrid.convert.create_image(self.array), normalize=False)  # type: ignore
+        return metaimage.ColourImage(voxgrid.convert.create_image(self.array), normalize=False)  # type: ignore
 
     def rotated(
         self, x_angle: float = 0, y_angle: float = 0, z_angle: float = 0
@@ -114,7 +114,7 @@ class VoxGrid(protocols.Voxel):
             colours[..., :3] = array[:, :, :, :-1]
 
         axes.voxels(  # type: ignore
-            array[:, :, :, -1] >= 0.25,
+            array[:, :, :, -1] >= 0.1,
             edgecolor="none",
             facecolors=colours[:, :, :],
             shade=True,

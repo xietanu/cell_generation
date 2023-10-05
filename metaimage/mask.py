@@ -14,7 +14,13 @@ class Mask(protocols.MetaImage):
 
     title: str | None
 
-    def __init__(self, data: np.ndarray | torch.Tensor, *, title: str | None = None):
+    def __init__(
+        self,
+        data: np.ndarray | torch.Tensor,
+        *,
+        title: str | None = None,
+        normalize: bool = True,
+    ):
         if isinstance(data, torch.Tensor):
             numpy_data = data.detach().cpu().squeeze().numpy()
         else:
@@ -27,12 +33,16 @@ class Mask(protocols.MetaImage):
 
         if numpy_data.max() - numpy_data.min() == 0:
             numpy_data[:, :] = -1
-        else:
+        elif normalize:
             numpy_data = (
                 2
                 * (numpy_data.astype(np.float32) - numpy_data.min())
                 / (numpy_data.max() - numpy_data.min())
                 - 1
+            )
+        elif numpy_data.max() > 1 or numpy_data.min() < -1:
+            raise ValueError(
+                "Mask must be in range [-1, 1] or normalized to that range"
             )
         self.array = numpy_data.astype(np.float32)
         self.title = title
