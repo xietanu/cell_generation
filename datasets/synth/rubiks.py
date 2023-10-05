@@ -37,6 +37,7 @@ class Rubiks(torch.utils.data.Dataset):
                 ),
             ]
         )
+        self.cube = voxgrid.create.rubiks(self.side_length, self.space_size)
         self.generated_images = [self._create_cuboid_set() for _ in range(num_images)]
 
     def __getitem__(self, index):
@@ -55,15 +56,13 @@ class Rubiks(torch.utils.data.Dataset):
         )
 
     def _create_cuboid_set(self):
-        cube = voxgrid.create.rubiks(self.side_length, self.space_size)
-
-        image = cube.rotated(*np.random.uniform(0, 2 * np.pi, size=3)).create_image()
+        image = self.cube.rotated(*np.random.uniform(0, 2 * np.pi, size=3)).create_image()
 
         return (
             image.as_array(),
             (
                 image.as_array(),
-                cube.as_array(),
+                self.cube.as_array(),
             ),
         )
 

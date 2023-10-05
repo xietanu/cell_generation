@@ -18,6 +18,7 @@ class Cuboid(torch.utils.data.Dataset):
         train: bool = False,
         alpha: float = 1,
         noise: float = 0,
+        occlude: tuple[float, float] = (0, 0),
     ):
         if noise < 0 or noise > 1:
             raise ValueError("noise must be between 0 and 1")
@@ -45,7 +46,7 @@ class Cuboid(torch.utils.data.Dataset):
             ]
         )
         self.generated_images = [
-            self._create_cuboid_set(alpha, noise) for _ in range(num_images)
+            self._create_cuboid_set(alpha, noise, occlude) for _ in range(num_images)
         ]
 
     def __getitem__(self, index):
@@ -63,7 +64,9 @@ class Cuboid(torch.utils.data.Dataset):
             ),
         )
 
-    def _create_cuboid_set(self, alpha: float = 1, noise: float = 0):
+    def _create_cuboid_set(
+        self, alpha: float = 1, noise: float = 0, occlude: tuple[float, float] = (0, 0)
+    ):
         side_lengths = tuple(
             np.random.randint(
                 self.side_range[0], self.side_range[1] + 1, size=3, dtype=int
@@ -74,6 +77,17 @@ class Cuboid(torch.utils.data.Dataset):
 
         mask = cuboid.rotated(*np.random.uniform(0, 2 * np.pi, size=3)).create_image()
         mask_array = mask.as_array()
+
+        if occlude[1] > 0:
+            occlusion = np.sqrt(np.random.uniform(occlude[0], occlude[1]))
+
+            height = int(mask_array.shape[0] * occlusion)
+            width = int(mask_array.shape[1] * occlusion)
+
+            top = np.random.randint(0, self.img_size[0] - height)
+            left = np.random.randint(0, self.img_size[1] - width)
+
+            mask_array[top : top + height, left : left + width] = 0
 
         if noise > 0:
             noise_mask = np.random.uniform(-1, 1, size=mask_array.shape)
