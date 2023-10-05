@@ -1,10 +1,12 @@
+"""Module that generates an image from a latent vector using a voxel generator."""
 import torch
-import numpy as np
 
 import nnet
 
 
 class MaskGenerator(torch.nn.Module):
+    """Module that generates an image from a latent vector using a voxel generator."""
+
     def __init__(
         self,
         model_gen: torch.nn.Module,
@@ -20,6 +22,22 @@ class MaskGenerator(torch.nn.Module):
         self.foreground_gen = foreground_gen
 
     def forward(self, in_tensor: torch.Tensor) -> torch.Tensor:
+        """se a latent vector to generate a voxel model, and from that an image.
+
+        If a background generator is specified, it is used to generate a background.
+        Similarly, if a foreground generator is specified, it is used to generate a
+        foreground.
+
+        Parameters
+        ----------
+        in_tensor : torch.Tensor
+            Latent vector.
+
+        Returns
+        -------
+        torch.Tensor
+            Image generated from the latent vector.
+        """
         voxel_grid = self.model_gen(in_tensor)
 
         background = self.background_gen(in_tensor) if self.background_gen else None
@@ -28,7 +46,7 @@ class MaskGenerator(torch.nn.Module):
         if self.foreground_gen is not None:
             foreground = self.foreground_gen(in_tensor)
 
-            alpha = foreground[:, -1, :, :] ** 3
+            alpha = foreground[:, -1, :, :]  # ** 3
             alpha = alpha.unsqueeze(1)
             if foreground.shape[1] == 1:
                 mask = mask * (1 - alpha) + alpha
