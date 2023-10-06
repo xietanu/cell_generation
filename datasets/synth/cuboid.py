@@ -90,9 +90,9 @@ class Cuboid(torch.utils.data.Dataset):
             mask_array[top : top + height, left : left + width] = 0
 
         if noise > 0:
-            noise_mask = np.random.uniform(-1, 1, size=mask_array.shape)
-            mask_array[noise_mask >= 1 - noise] = noise_mask[noise_mask >= 1 - noise]
-            mask_array[noise_mask <= -1 + noise] = noise_mask[noise_mask <= -1 + noise]
+            noise_mask = np.random.uniform(0, 1, size=mask_array.shape)
+            mask_array[noise_mask >= 1 - noise/2] = noise_mask[noise_mask >= 1 - noise/2]
+            mask_array[noise_mask <= noise/2] = noise_mask[noise_mask <= noise/2]
 
         return (
             mask_array,
