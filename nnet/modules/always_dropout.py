@@ -2,7 +2,7 @@ import torch
 
 
 class AlwaysDropout(torch.nn.Module):
-    """Module that alwazs performs a convolutional dropout."""
+    """Module that always performs a convolutional dropout."""
 
     def __init__(self, probability: float = 0.1, device: str | torch.device = "cuda"):
         super().__init__()
